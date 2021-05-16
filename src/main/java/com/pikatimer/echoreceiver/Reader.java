@@ -105,6 +105,7 @@ public class Reader {
     }
     
     public void setStatus(JSONObject status){
+        
         Platform.runLater(() -> {
             
             // Name and Location

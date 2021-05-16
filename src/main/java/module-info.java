@@ -1,4 +1,4 @@
-module com.pikatimer.echoreceiver.echoreceiver {
+module com.pikatimer.echoreceiver {
     requires javafx.controls;
     requires java.base;
     requires java.net.http;

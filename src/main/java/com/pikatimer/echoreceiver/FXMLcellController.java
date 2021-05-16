@@ -41,6 +41,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -190,11 +191,89 @@ public class FXMLcellController {
     }
 
     private void updateLocationText() {
-        logger.debug("updateLocationText() called");
+        TextInputDialog dialog = new TextInputDialog(reader.getReaderLocationProperty().getValueSafe());
+        dialog.setTitle("Change Reader Location");
+        dialog.setHeaderText("Update Location for " + reader.getReaderNameProperty().getValueSafe());
+        dialog.setContentText("New Location:");
+
+        // Traditional way to get the response value.
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()){
+            logger.debug("Changing reader " + reader.getReaderIDProperty().getValueSafe() + " location string to " + result.get());
+            
+             JSONObject command = new JSONObject();
+            command.put("mac", reader.getReaderIDProperty().getValueSafe());
+            command.put("rename_location", result.get());
+            command.put("location", result.get());
+        
+            String endpoint = RelayPrefs.getInstance().getEchoEndpoint();
+            
+            logger.debug("Posting to " + endpoint + "commands/ : \n " + command.toString(4));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(command.toString()))
+                .uri(URI.create(endpoint + "command/"))
+                .setHeader("User-Agent", "Echo Transmitter") // add request header
+                .header("Content-Type", "application/json")
+                .build();
+            try {
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                // print status code
+                logger.trace("FXMLcellController::updateLocationText Response Code: " + Integer.toString(response.statusCode()));
+                logger.trace("FXMLcellController::updateLocationText Response Body: " + response.body());   
+                Alert confAlert = new Alert(AlertType.INFORMATION);
+                confAlert.setTitle("Request Sent");
+                confAlert.setContentText("Rename Request Sent");
+                confAlert.setHeaderText(null);
+
+                confAlert.showAndWait();
+            } catch (IOException | InterruptedException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
     }
 
     private void updateUnitNameText() {
-        logger.debug("updateUnitNameText() called");
+        TextInputDialog dialog = new TextInputDialog(reader.getReaderNameProperty().getValueSafe());
+        dialog.setTitle("Change Reader Name");
+        dialog.setHeaderText("Update Name for "+ reader.getReaderIDProperty().getValueSafe());
+        dialog.setContentText("New Name:");
+
+        // Traditional way to get the response value.
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()){
+            logger.debug("Changing reader " + reader.getReaderIDProperty().getValueSafe() + " location string to " + result.get());
+            
+             JSONObject command = new JSONObject();
+            command.put("mac", reader.getReaderIDProperty().getValueSafe());
+            command.put("rename_reader", result.get());
+            command.put("location", result.get());
+        
+            String endpoint = RelayPrefs.getInstance().getEchoEndpoint();
+            
+            logger.debug("Posting to " + endpoint + "commands/ : \n " + command.toString(4));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(command.toString()))
+                .uri(URI.create(endpoint + "command/"))
+                .setHeader("User-Agent", "Echo Transmitter") // add request header
+                .header("Content-Type", "application/json")
+                .build();
+            try {
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                // print status code
+                logger.trace("FXMLcellController::updateLocationText Response Code: " + Integer.toString(response.statusCode()));
+                logger.trace("FXMLcellController::updateLocationText Response Body: " + response.body());   
+                Alert confAlert = new Alert(AlertType.INFORMATION);
+                confAlert.setTitle("Request Sent");
+                confAlert.setContentText("Rename Request Sent");
+                confAlert.setHeaderText(null);
+
+                confAlert.showAndWait();
+            } catch (IOException | InterruptedException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
     }
 
     private void toggleReading() {

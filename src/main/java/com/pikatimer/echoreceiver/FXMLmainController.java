@@ -24,6 +24,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.prefs.Preferences;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
@@ -231,7 +232,7 @@ public class FXMLmainController {
                                 } else {
                                     Reader r = new Reader(p.getString("mac"));
                                     r.setStatus(p);
-                                    readerList.add(r);
+                                    Platform.runLater(() -> {readerList.add(r);});
                                     readerMap.put(p.getString("mac"), r);
                                     logger.debug("New Reader: " +  p.getString("mac"));
                                 }

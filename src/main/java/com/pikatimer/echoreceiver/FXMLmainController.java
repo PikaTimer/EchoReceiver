@@ -326,7 +326,7 @@ public class FXMLmainController {
 
         if(selectedDirectory != null && selectedDirectory.isDirectory() && selectedDirectory.canWrite()){
             ouputDirTextField.setText(selectedDirectory.getAbsolutePath());
-            System.out.println(selectedDirectory.getAbsolutePath());
+            logger.debug(selectedDirectory.getAbsolutePath());
             RelayPrefs.getInstance().setOutputDir(selectedDirectory);
         }
     }

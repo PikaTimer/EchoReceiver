@@ -335,6 +335,11 @@ public class FXMLcellController {
         rewindVBox.setStyle("-fx-font-size: 16px;");
         rewindVBox.setSpacing(3);
         
+        // Note, due to https://bugs.openjdk.java.net/browse/JDK-8191995
+        // We need to disable the DatePicker editor
+        // since otherwise users can type in a new date that is
+        // promptly ignored. :-/ 
+        
         // start date / time
         HBox startHBox = new HBox();
         startHBox.setSpacing(5.0);
@@ -342,6 +347,8 @@ public class FXMLcellController {
         startLabel.setMinWidth(40);
         DatePicker startDate = new DatePicker();
         TextField startTime = new TextField();
+        startDate.getEditor().setDisable(true);
+        startDate.getEditor().setOpacity(1);
         startHBox.getChildren().addAll(startLabel,startDate,startTime);
         
         // end date / time
@@ -351,6 +358,8 @@ public class FXMLcellController {
         endLabel.setMinWidth(40);
         DatePicker endDate = new DatePicker();
         TextField endTime = new TextField();
+        endDate.getEditor().setDisable(true);
+        endDate.getEditor().setOpacity(1);
         endHBox.getChildren().addAll(endLabel,endDate,endTime);
         
         // Server vs
@@ -380,7 +389,7 @@ public class FXMLcellController {
             startTimeOK.setValue(false);
             if (DurationParser.parsable(newValue)) startTimeOK.setValue(Boolean.TRUE);
             if ( newValue.isEmpty() || newValue.matches("^[0-9]*(:?([0-5]?([0-9]?(:([0-5]?([0-9]?)?)?)?)?)?)?") ){
-                System.out.println("Possiblely good start Time (newValue: " + newValue + ")");
+                logger.trace("Rewind Dialog: Possiblely good start Time (newValue: " + newValue + ")");
             } else {
                 Platform.runLater(() -> {
                     int c = startTime.getCaretPosition();
@@ -389,14 +398,14 @@ public class FXMLcellController {
                     startTime.setText(oldValue);
                     startTime.positionCaret(c);
                 });
-                System.out.println("Bad start time (newValue: " + newValue + ")");
+                logger.trace("Rewind Dialog: Bad start time (newValue: " + newValue + ")");
             }
         });
         endTime.textProperty().addListener((observable, oldValue, newValue) -> {
             endTimeOK.setValue(false);
             if (DurationParser.parsable(newValue)) endTimeOK.setValue(Boolean.TRUE);
             if ( newValue.isEmpty() || newValue.matches("^[0-9]*(:?([0-5]?([0-9]?(:([0-5]?([0-9]?)?)?)?)?)?)?") ){
-                System.out.println("Possiblely good start Time (newValue: " + newValue + ")");
+                logger.trace("Rewind Dialog: Possiblely good start Time (newValue: " + newValue + ")");
             } else {
                 Platform.runLater(() -> {
                     int c = endTime.getCaretPosition();
@@ -405,7 +414,7 @@ public class FXMLcellController {
                     endTime.setText(oldValue);
                     endTime.positionCaret(c);
                 });
-                System.out.println("Bad end time (newValue: " + newValue + ")");
+                logger.trace("Redind Dialog: Bad end time (newValue: " + newValue + ")");
             }
         });
         
@@ -455,7 +464,7 @@ public class FXMLcellController {
                             
                             String from = LocalDateTime.of(rwd.startDate, LocalTime.ofSecondOfDay(rwd.startTime.getSeconds())).toString().replace("T", " ");
                             String to = LocalDateTime.of(rwd.endDate, LocalTime.ofSecondOfDay(rwd.endTime.getSeconds())).toString().replace("T", " ");
-                            
+                            logger.debug("Rewinding from Server: " + mac + " from " + from + " -> " + to);
                             logger.trace("FXMLcellController::Rewind request: " + endpoint + "data/since/" +  mac + "/" + URLEncoder.encode(from, "UTF-8") + "/" + URLEncoder.encode(to, "UTF-8") );
 
                             HttpRequest request = HttpRequest.newBuilder()
@@ -491,6 +500,13 @@ public class FXMLcellController {
                 LocalDateTime EPOC = LocalDateTime.of(LocalDate.parse("1980-01-01",DateTimeFormatter.ISO_LOCAL_DATE),LocalTime.MIDNIGHT);
                 Long startTimestamp = Duration.between(EPOC, LocalDateTime.of(rwd.startDate, LocalTime.ofSecondOfDay(rwd.startTime.getSeconds()))).getSeconds();
                 Long endTimestamp = Duration.between(EPOC, LocalDateTime.of(rwd.endDate, LocalTime.ofSecondOfDay(rwd.endTime.getSeconds()))).getSeconds();
+                
+                if (logger.isDebugEnabled()) {
+                    String from = LocalDateTime.of(rwd.startDate, LocalTime.ofSecondOfDay(rwd.startTime.getSeconds())).toString().replace("T", " ");
+                    String to = LocalDateTime.of(rwd.endDate, LocalTime.ofSecondOfDay(rwd.endTime.getSeconds())).toString().replace("T", " ");
+                    String mac = reader.getReaderIDProperty().getValueSafe();
+                    logger.debug("Rewinding from Reader: " + mac + " from " + from + " -> " + to);
+                }
 
                 logger.debug("Reader " + reader.getReaderIDProperty().getValueSafe() + " Rewind from " + startTimestamp + " to " + endTimestamp);
                 JSONObject command = new JSONObject();

@@ -42,7 +42,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.TitledPane;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -68,7 +67,6 @@ public class FXMLcellController {
         .build();
 
     Reader reader = null;
-    @FXML TitledPane titledPane;
     @FXML Label macLabel;
     @FXML Label locationLabel;
     @FXML Label unitNameLabel;
@@ -122,7 +120,6 @@ public class FXMLcellController {
         // Name and Location
         locationLabel.textProperty().bind(reader.getReaderLocationProperty());
         unitNameLabel.textProperty().bind(reader.getReaderNameProperty());
-        titledPane.textProperty().bind(Bindings.concat(reader.getReaderNameProperty(),": ",reader.getReaderLocationProperty()));
         
         // Battery Level
         batteryLevelProgressBar.progressProperty().bind(reader.getBatteryProperty().divide(100.0f));

@@ -24,7 +24,6 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -46,8 +45,6 @@ import org.slf4j.LoggerFactory;
 public class FXMLmainController {
     static final Preferences prefs = RelayPrefs.getInstance().getPreferences();
     static final Logger logger = LoggerFactory.getLogger(FXMLmainController.class);
-    
-    private static final Pattern REGEX_PATTERN = Pattern.compile("^\\p{XDigit}+$");
     
     private static final HttpClient httpClient = HttpClient.newBuilder()
         .version(HttpClient.Version.HTTP_2)
@@ -158,17 +155,12 @@ public class FXMLmainController {
             for (int j = 0; j < results.length(); j++) {
                 JSONObject p = results.getJSONObject(j);
                 
-                if (p.has("mac") && REGEX_PATTERN.matcher(p.getString("mac")).matches()) {
-                    if (readerMap.containsKey(p.getString("mac"))) {
-                        readerMap.get(p.getString("mac")).setStatus(p);;
-                    } else {
-                        Reader r = new Reader(p.getString("mac"));
-                        r.setStatus(p);
-                        Platform.runLater(() -> {readerList.add(r);});
-                        readerMap.put(p.getString("mac"), r);
-                        logger.debug("New Reader: " +  p.getString("mac"));
-                    }
-                }
+                Reader r = new Reader(p.getString("mac"));
+                r.setStatus(p);
+                readerList.add(r);
+                readerMap.put(p.getString("mac"), r);
+
+                logger.debug("New Reader: " +  p.getString("mac"));
             }
             
             
@@ -234,17 +226,15 @@ public class FXMLmainController {
                             // If successful, create readers and populate reader list
                             for (int j = 0; j < results.length(); j++) {
                                 JSONObject p = results.getJSONObject(j);
-                                
-                                if (p.has("mac") && REGEX_PATTERN.matcher(p.getString("mac")).matches()) {
-                                    if (readerMap.containsKey(p.getString("mac"))) {
-                                        readerMap.get(p.getString("mac")).setStatus(p);;
-                                    } else {
-                                        Reader r = new Reader(p.getString("mac"));
-                                        r.setStatus(p);
-                                        Platform.runLater(() -> {readerList.add(r);});
-                                        readerMap.put(p.getString("mac"), r);
-                                        logger.debug("New Reader: " +  p.getString("mac"));
-                                    }
+
+                                if (readerMap.containsKey(p.getString("mac"))) {
+                                    readerMap.get(p.getString("mac")).setStatus(p);;
+                                } else {
+                                    Reader r = new Reader(p.getString("mac"));
+                                    r.setStatus(p);
+                                    Platform.runLater(() -> {readerList.add(r);});
+                                    readerMap.put(p.getString("mac"), r);
+                                    logger.debug("New Reader: " +  p.getString("mac"));
                                 }
                             }
                         }

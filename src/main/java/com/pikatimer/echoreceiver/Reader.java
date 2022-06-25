@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Reader {
     static final Preferences prefs = RelayPrefs.getInstance().getPreferences();
+    static final Map<String,String> bibChipMap = RelayPrefs.getInstance().getBibChipMap();
 
     static final Logger logger = LoggerFactory.getLogger(Reader.class);
     static final Set<String> processedReads = new HashSet();
@@ -209,6 +211,7 @@ public class Reader {
             }
         }
         
+        
         StringProperty last = new SimpleStringProperty();
         try {
             s.lines().forEach( r -> {
@@ -217,6 +220,16 @@ public class Reader {
                     last.setValue(r);
                     if (processedReads.contains(r)) return;
                     processedReads.add(r);
+                    
+                    if (!bibChipMap.isEmpty()){
+
+                        String[] rfidRead = r.replaceAll("\"", "").split(",");
+                        if (bibChipMap.containsKey(rfidRead[1])) {
+                            rfidRead[2] = bibChipMap.get(rfidRead[1]);
+                            r = String.join(",", rfidRead);
+                        }
+                    }
+                    
                     outputFileBW.write(r);
                     outputFileBW.newLine();
                 } catch (IOException ex) {
@@ -282,7 +295,16 @@ public class Reader {
                     return;
                 }
             }
-            outputFileBW.write(p.getString("rfid"));
+            String read = p.getString("rfid");
+            if (!bibChipMap.isEmpty()){
+                
+                String[] rfidRead = p.getString("rfid").replaceAll("\"", "").split(",");
+                if (bibChipMap.containsKey(rfidRead[1])) {
+                    rfidRead[2] = bibChipMap.get(rfidRead[1]);
+                    read = String.join(",", rfidRead);
+                }
+            }
+            outputFileBW.write(read);
             outputFileBW.newLine();
             outputFileBW.flush();
         } catch (IOException ex) {

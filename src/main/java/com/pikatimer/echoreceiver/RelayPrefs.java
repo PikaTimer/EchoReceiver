@@ -6,6 +6,8 @@
 package com.pikatimer.echoreceiver;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
@@ -16,6 +18,7 @@ public class RelayPrefs {
     private static final Preferences prefs = Preferences.userRoot().node("RelayReceiver");
     private File outputDir = null;
     private String echoEndpoint = "";
+    private Map<String,String> bibChipMap = new HashMap();
 
     /**
     * SingletonHolder is loaded on the first execution of Singleton.getInstance() 
@@ -49,6 +52,10 @@ public class RelayPrefs {
     
     public void setEchoEndpoint(String e){
         echoEndpoint = e;
+    }
+    
+    public Map<String,String> getBibChipMap(){
+        return bibChipMap;
     }
     
 }
